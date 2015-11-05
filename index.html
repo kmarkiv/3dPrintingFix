@@ -9,7 +9,7 @@
     <style>
         .selected {
             border-style: solid;
-            border-color: lawngreen !important;
+            border-color: #337ab7 !important;
             border-width: 5px;
         }
 
@@ -21,9 +21,65 @@
             margin: 5px;;
         }
 
+        .btn-tab {
+            padding: 5px;
+            background-color: #a6e1ec;
+            cursor: pointer;
+
+        }
+
+        .btn-tab:hover {
+            background-color: white;
+        }
+
+        .home-container {
+            padding: 20px;
+            margin-top: 30px;
+        }
+
+        .printer-row {
+            min-height: 520px;
+        }
+
+        .label-primary {
+            margin: 1px !important;
+        }
+
+        .clear {
+            height: 50px;
+        }
+
+        .select-image {
+            margin-bottom: 20px;
+        }
+
+        .input-keyword {
+            width: 400px;
+        }
+
+        .keyword {
+            margin-bottom: 5px;
+            cursor: pointer;
+        }
+
+        .fty {
+            margin-top: 50px;;
+        }
+
+        .five-btm {
+            margin-bottom: 5px !important;;
+        }
+
+        .two-btm {
+            margin: 2px !important;;
+        }
+
+        .select {
+            cursor: pointer;
+        }
     </style>
 </head>
-<body ng-app="myApp">
+<body ng-app="myApp" data-ng-controller="myCtrl" id="print">
 <nav class="navbar navbar-inverse navbar-fixed-top">
     <div class="container">
         <div class="navbar-header">
@@ -38,7 +94,7 @@
         </div>
         <div id="navbar" class="navbar-collapse collapse">
             <ul class="nav navbar-nav">
-                <li class="active"><a href="#">Home</a></li>
+                <li class="active"><a href="#" ng-click="init()">Home</a></li>
                 <li><a href="#about">About</a></li>
                 <li><a href="#contact">Contact</a></li>
             </ul>
@@ -47,23 +103,24 @@
     </div>
 </nav>
 <!-- state 1-->
-<div class="container" style="padding: 20px;margin-top: 30px;">
-    <div class="row" data-ng-controller="myCtrl" id="print">
+<div class="container">
+    <div class="row home-container">
         <!-- state 1-->
 
 
-        <div class="row" style="min-height: 520px;">
+        <div class="row printer-row">
 
 
             <div class="col-md-12" ng-if="printer.state=='1'">
-                <div style="height: 50px;">
-                    <button class="pull-right btn">Clear All</button>
+                <div class="clear">
+                    <button class="pull-right btn" ng-click="printer.clear_select_images()">Clear All</button>
                     <h3>Select photos that are similar to your failed 3d print </h3>
 
                 </div>
                 <div ng-repeat="image in printer.images">
-                    <div class="col-md-4" style="margin-bottom: 20px;">
+                    <div class="col-md-4 select-image">
                         <img src="{{image.src}}" width="200" height="120" ng-click="printer.select_image($index)"
+                             class="select"
                              ng-class="{ 'selected': image.selected }"
                                 />
                     </div>
@@ -73,16 +130,17 @@
             </div>
 
 
-            <div class="col-md-8" ng-if="printer.state=='2'">
+            <div class="col-md-6" ng-if="printer.state=='2'">
 
                 <h3>Select or add keywords </h3>
 
-                <div class="input-group" style="width: 400px;">
-                    <input type="text" class="form-control" placeholder="Add keyword ...">
+
+                <div class="input-group input-keyword">
+                    <input type="text" id="new" class="form-control" ng-model="word" placeholder="Add keyword ...">
       <span class="input-group-btn">
-        <button class="btn btn-default" type="button">Add</button>
+        <button class="btn btn-default" type="button" ng-click="add_word(word)">Add</button>
       </span>
-                    <button class="pull-right btn">Clear All</button>
+                    <button class="pull-right btn" ng-click="printer.clear_select_words()">Clear All</button>
                 </div>
                 <br><br>
                 <!-- /input-group -->
@@ -90,7 +148,7 @@
 
                 <div ng-repeat="image in printer.words">
 
-                    <div class="col-md-3 word" ng-class="{ 'selected': image.selected }" style="margin-bottom: 5px;"
+                    <div class="col-md-3 word keyword" ng-class="{ 'selected': image.selected }"
                          ng-click="printer.select_word($index)">
                         {{image.word}}
                     </div>
@@ -99,40 +157,127 @@
 
             </div>
 
-            <div class="col-lg-8 " ng-if="printer.state==3" style="margin-top: 50px;">
+            <div class="col-lg-6 fty" ng-if="printer.state==3">
+                <h3> Upload a photo of your 3d print</h3>
+
                 <div class="form-group">
                     <label for="exampleInputFile">Input File</label>
                     <input type="file" id="exampleInputFile">
-                    <p class="help-block">Example block-level help text here.</p>
+
+                    <p class="help-block">Upload a jpg file.</p>
                 </div>
             </div>
 
 
-            <div class="col-lg-4 well" ng-if="printer.state>1" style="margin-top: 50px;">
-                <div ng-repeat="image in printer.selected_images">
-                    <div class="col-md-2" style="margin-bottom: 5px;">
+            <div class=" well fty" ng-if="printer.state>1"
+                 ng-class="{true:'col-lg-12', false:'col-lg-5'}[printer.state>3]"
+                    >
+                <div class="row">
+                    <div ng-repeat="image in printer.selected_images">
+                        <div class="col-md-2 ">
                         <img src="{{printer.images[image].src}}" width="50" height="50"
                              ng-class="{ 'selected': image.selected }"
                                 />
                     </div>
                 </div>
-                <br>
-                <hr>
-
-                <div ng-repeat="image in printer.selected_words">
-
-                   <span class="label label-primary" style="display: inline"> {{printer.words[image].word}}</span>
                 </div>
 
+
+
+
+                <span class="label label-primary" ng-repeat="image in printer.selected_words">
+                     {{printer.words[image].word}}
+                </span>
+                <br>
+
+                <h3 ng-if="printer.state<4">Possible Issues</h3>
+
+                <div ng-repeat="image in suggestions | limitTo:3 " ng-if="printer.state==2">
+
+                    <div class="row">
+                        <div class="col-lg-2">
+                            <h2 class="two-btm">{{$index+1}}</h2>
+
+                            <small> XX%</small>
+                        </div>
+                        <div class="col-lg-10">
+                            <strong>{{image.title}}</strong>
+                            {{image.description}}
+                        </div>
+
+
+                    </div>
+
+                </div>
+
+
+                <div ng-repeat="image in suggestions | limitTo:6 " ng-if="(printer.state>2 && solutions=='all')"
+                        >
+
+                    <div class="row five-btm">
+                        <div class="col-lg-2 btn-tab" ng-click="showSolution($index)">
+                            <h2 class="two-btm">{{$index+1}}</h2>
+
+                            <small> XX%</small>
+                        </div>
+                        <div class="col-lg-7">
+                            <strong>{{image.title}}</strong>
+                            {{image.description}}
+                        </div>
+                        <div class="col-lg-2 ">
+                            <button type="button"
+                                    class="btn  btn-success btn-sm pull-right"
+                                    ng-click="showSolution($index)">SOLUTION
+                            </button>
+
+                        </div>
+
+
+                    </div>
+
+                </div>
+                <hr>
+
+                <div class="row" ng-if="(printer.state>2 && solutions=='one')">
+
+
+                    <div class="col-lg-2 ">
+                        <div ng-repeat="image in suggestions " ng-click="showSolution($index)" class="btn-tab">
+                            <h2 class="two-btm">{{$index+1}}</h2>
+
+                            <small> XX%</small>
+                        </div>
+                    </div>
+
+
+                    <div class="col-lg-7">
+
+                        <strong>{{app.title}}</strong> <br>
+                        {{app.description}}
+                        <br> <br> <br>
+
+                        <div class="" ng-include="template">
+
+                        </div>
+                    </div>
+                </div>
             </div>
 
 
             <!-- state 1-->
         </div>
-        <button type="button" class="btn btn-lg" ng-click="printer.prev()" ng-if="printer.state>1">Previous Step
+        <button type="button" class="btn btn-lg" ng-click="printer.prev()" ng-if="(printer.state>1 && printer.state<4)">
+            Previous Step
         </button>
-        <button type="button" class="btn btn-lg btn-primary pull-right" ng-click="printer.next()">Next Step</button>
+        <button type="button" class="btn btn-lg" ng-click="allSolutions()" ng-if="printer.state>3">Show Suggestions
+        </button>
 
+        <button type="button" ng-if="printer.state<4" class="btn btn-lg btn-primary pull-right"
+                ng-click="printer.next()">Next Step
+        </button>
+        <a type="button" ng-if="printer.state>3" class="btn btn-lg btn-primary pull-right" target="_blank"
+           href="https://mail.google.com/mail/?view=cm&fs=1&tf=1&to=vkamath@andrew.cmu.edu&su=3D%20help">Provide
+            feedback</a>
     </div>
 </div>
 <!-- state 2 -->

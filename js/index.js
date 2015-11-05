@@ -20,12 +20,12 @@ var printer = function () {
 
     };
 
-    this.next = function(){
-        this.state+=1;
+    this.next = function () {
+        this.state += 1;
     };
 
-    this.prev = function(){
-        this.state-=1;
+    this.prev = function () {
+        this.state -= 1;
     };
 
     this.add_image = function (i, src) {
@@ -33,7 +33,7 @@ var printer = function () {
     };
 
     this.add_word = function (i, src) {
-        this.words.push(new keyword(i, src));
+        this.words.push(new keyword(i, src, true));
     };
 
     this.build_words = function () {
@@ -66,6 +66,22 @@ var printer = function () {
                 images.push(i);
         }
         this.selected_words = images;
+    };
+
+    this.clear_select_words = function () {
+        var images = [];
+        for (var i = 0; i < this.words.length; i++) {
+            this.words[i].selected = false;
+        }
+        this.selected_words = images;
+    };
+
+    this.clear_select_images = function () {
+        var images = [];
+        for (var i = 0; i < this.images.length; i++) {
+            this.images[i].selected = false;
+        }
+        this.selected_images = images;
     };
 
     this.select_image = function (index) {
@@ -110,5 +126,61 @@ var myApp = angular.module('myApp', []);
 
 myApp.controller('myCtrl', ['$scope', function ($scope) {
     $scope.printer = new printer();
+    $scope.suggestions = [
+        {
+            title: 'Bed Adhesion Issue',
+            description: 'The first layer of the filament is only partially sticking, or isn’t sticking at all to the printer bed',
+            page: 'static/template1.html'
+        },
+        {
+            title: 'Layer Separation Issue',
+            description: 'The layer doesn’t bond to the layer below it and they start to separate',
+            page: 'static/template2.html'
+        },
+        {
+            title: 'Inconsistent Filament Thickness Issue',
+            description: 'Some parts of the filament layer appear thinner or thicker than other parts',
+            page: 'static/template3.html'
+        },
+        {
+            title: 'Layer Height Issue',
+            description: 'Entire layer is pushed flat against the print bed, creating a thin layer of filament',
+            page: 'static/template3.html'
+        },
+        //    {title:'Offset Layer Issue',description:'Sections of the part appear to be offset and create a jagged pyramid effect', page: 'static/template3.html'},
+        //     {title:'Jammed Print Head Issue',description:'The filament doesnt move when extruded or has jagged marks left in it', page: 'static/template3.html'}
+
+    ];
+
+    $scope.app = [];
+
+    $scope.template = "";
+    $scope.word = "";
+    $scope.solutions = "all";
+
+    $scope.allSolutions = function () {
+        $scope.solutions = "all";
+    };
+
+    $scope.init = function () {
+        $scope.printer = new printer();
+        $scope.template = "";
+        $scope.solutions = "all";
+    };
+
+    $scope.add_word = function (word) {
+
+        if (word != "")
+            $scope.printer.add_word(0, word);
+        $scope.word = "";
+    };
+
+    $scope.showSolution = function (index) {
+        $scope.printer.state = 4;
+        $scope.solutions = "one";
+        $scope.app = $scope.suggestions[index];
+        $scope.template = $scope.suggestions[index].page;
+
+    };
 }]);
 
